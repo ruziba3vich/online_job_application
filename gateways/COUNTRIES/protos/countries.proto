@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "genprotos/";
+
+message RawCountry {
+    string country_name = 1;
+    float latitude = 2;
+    float longitude = 3;
+}
+
+message Country {
+    int32 country_id = 1;
+    string country_name = 2;
+    float latitude = 3;
+    float longitude = 4;
+}
+
+message GetCountryRequest {
+    int32 country_id = 1;
+}
+
+message GetClosestCountryResponse {
+    repeated Country countries = 1;
+}
+
+service CountryService {
+    rpc CreateCountry(RawCountry) returns (Country);
+    rpc GetClosestCountry(GetCountryRequest) returns (GetClosestCountryResponse);
+    rpc GetCountryById(GetCountryRequest) returns (Country);
+}
