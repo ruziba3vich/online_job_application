@@ -33,8 +33,8 @@ func (a *API) RUN() error {
 	handler := handler.New(&handlerCfg)
 
 	router.POST("/create/country", handler.CreateCountry)
-	router.GET("/country/id", handler.GetCountryById)
-	router.GET("/closest/country/to/id", handler.GetClosestCountry)
+	router.GET("/country/:id", handler.GetCountryById)
+	router.GET("/closest/country/to/:id", handler.GetClosestCountry)
 
 	return router.Run(a.config.OwnHost)
 }

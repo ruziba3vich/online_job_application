@@ -51,8 +51,10 @@ func (h *handler) CreateCountry(c *gin.Context) {
 
 func (h *handler) GetClosestCountry(c *gin.Context) {
 	countryStrId := c.Param("id")
+	log.Println(countryStrId)
 	countryId, err := strconv.Atoi(countryStrId)
 	if err != nil {
+		h.logger.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
@@ -63,6 +65,7 @@ func (h *handler) GetClosestCountry(c *gin.Context) {
 	response, err := h.clnt.GetClosestCountry(c, &req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		h.logger.Println(err)
 		return
 	}
 	c.JSON(http.StatusOK, response.Countries)

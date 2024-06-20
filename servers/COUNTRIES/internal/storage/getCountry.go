@@ -15,7 +15,8 @@ import (
 
 type (
 	CountrySt struct {
-		db *sql.DB
+		db           *sql.DB
+		queryBuilder sq.StatementBuilderType
 	}
 )
 
@@ -27,14 +28,13 @@ func New(config *config.Config) (*CountrySt, error) {
 	}
 
 	return &CountrySt{
-		db: db,
+		db:           db,
+		queryBuilder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}, nil
 }
 
 func (s *CountrySt) CreateCountry(ctx context.Context, req *genprotos.RawCountry) (*genprotos.Country, error) {
-	queryBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar) // postgres identifier
-
-	query, args, err := queryBuilder.Insert("countries").
+	query, args, err := s.queryBuilder.Insert("countries").
 		Columns("country_name", "latitude", "longitude").
 		Values(
 			req.CountryName,
@@ -67,12 +67,13 @@ func (s *CountrySt) CreateCountry(ctx context.Context, req *genprotos.RawCountry
 }
 
 func (s *CountrySt) GetCountryById(ctx context.Context, req *genprotos.GetCountryRequest) (*genprotos.Country, error) {
-	query, args, err := sq.Select("country_id", "country_name", "latitude", "longitude").
+	query, args, err := s.queryBuilder.Select("country_id", "country_name", "latitude", "longitude").
 		From("countries").
 		Where(sq.Eq{"country_id": req.CountryId}).
 		ToSql()
 
 	if err != nil {
+		log.Println(err, "1")
 		return nil, err
 	}
 
@@ -87,6 +88,7 @@ func (s *CountrySt) GetCountryById(ctx context.Context, req *genprotos.GetCountr
 		&response.CountryName,
 		&response.Latitude,
 		&response.Longitude); err != nil {
+		log.Println(err, "2")
 		return nil, err
 	}
 
@@ -94,7 +96,7 @@ func (s *CountrySt) GetCountryById(ctx context.Context, req *genprotos.GetCountr
 }
 
 func (s *CountrySt) getAllCountries(ctx context.Context) ([]*genprotos.Country, error) {
-	query, _, err := sq.Select("country_id", "latitude", "longitude").
+	query, _, err := s.queryBuilder.Select("country_id", "country_name", "latitude", "longitude").
 		From("countries").
 		ToSql()
 
